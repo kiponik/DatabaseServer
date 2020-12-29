@@ -161,5 +161,20 @@ CREATE TABLE tag_objects(
 	PRIMARY KEY (object_id, tag_id)
 );
 
+ALTER TABLE profiles 
+ADD COLUMN photo_id INT UNSIGNED AFTER birthday;
 
+DESC profiles;
 
+CREATE TABLE user_statuses (
+	id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(100) NOT NULL,
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+INSERT INTO user_statuses (name) VALUES ('single'),('married');
+SELECT * FROM user_statuses;
+DESC profiles;
+UPDATE profiles SET status = NULL;
+ALTER TABLE profiles RENAME COLUMN status TO user_statuses_id;
