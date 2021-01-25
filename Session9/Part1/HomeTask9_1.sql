@@ -1,0 +1,82 @@
+-- 1
+
+USE sample;
+USE shop;
+DESC users;
+
+ALTER TABLE users MODIFY id BIGINT UNSIGNED;
+INSERT INTO sample.users  SELECT id, name  FROM shop.users;
+
+SELECT * FROM users;
+
+-- 2
+
+SELECT name, (SELECT name FROM catalogs WHERE catalogs.id = products. catalog_id) AS catalog_name FROM products;
+
+CREATE OR REPLACE VIEW namings AS
+SELECT name, (SELECT name FROM catalogs WHERE catalogs.id = products. catalog_id) AS catalog_name FROM products;
+
+SELECT * FROM namings;
+
+-- 3
+
+CREATE TEMPORARY TABLE dates (
+	created_at DATE
+);
+
+INSERT INTO dates (created_at) VALUES
+	('2018-08-01'),
+	('2018-08-04'),
+	('2018-08-16');
+	
+SELECT * FROM dates;
+
+SELECT selected_date, 
+	CASE
+		WHEN selected_date = dates.created_at THEN '1'
+		ELSE '0'
+	END AS existInMainTable
+FROM 
+(SELECT adddate('1970-01-01',t4*10000 + t3*1000 + t2*100 + t1*10 + t0) selected_date
+FROM
+ (SELECT 0 t0 UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t0,
+ (SELECT 0 t1 UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t1,
+ (SELECT 0 t2 UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t2,
+ (SELECT 0 t3 UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t3,
+ (SELECT 0 t4 UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t4) v
+	LEFT JOIN dates
+	 ON dates.created_at = selected_date
+WHERE selected_date BETWEEN '2018-08-01' AND '2018-08-31'
+GROUP BY selected_date
+ORDER BY selected_date;
+
+-- 4
+
+CREATE TEMPORARY TABLE tempdates (
+	created_at DATE,
+	fresh VARCHAR(10)
+);
+
+INSERT INTO tempdates (created_at) VALUES
+	('2018-08-01'),
+	('2018-08-04'),
+	('2018-08-31'),
+	('2018-08-15'),
+	('2018-08-11'),
+	('2018-08-18'),
+	('2018-08-25'),
+	('2018-08-02'),
+	('2020-08-01');
+
+START TRANSACTION;
+
+UPDATE tempdates SET fresh = NULL;
+
+UPDATE tempdates SET fresh = 'Y'
+ORDER BY created_at DESC LIMIT 5;
+
+DELETE FROM tempdates WHERE fresh IS NULL;
+
+SELECT * FROM tempdates;
+
+COMMIT;
